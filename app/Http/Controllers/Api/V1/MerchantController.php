@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Merchant\StoreMerchantRequest;
 use App\Http\Requests\Api\V1\Merchant\UpdateMerchantRequest;
+use App\Http\Resources\MerchantResource;
 use App\Models\Merchant;
 use Illuminate\Http\Request;
 
@@ -31,7 +32,11 @@ class MerchantController extends Controller
 
         $merchants = $query->get();
 
-        return response()->json($merchants, 200);
+
+        $resources = MerchantResource::collection($merchants);
+
+        return response()->json($resources->resolve());
+
     }
 
 
@@ -42,7 +47,9 @@ class MerchantController extends Controller
     {
         $model = Merchant::create($request->validated());
 
-        return response()->json($model, 201);
+        $resource = new MerchantResource($model);
+
+        return response()->json($resource->resolve());
     }
 
     /**
@@ -57,7 +64,9 @@ class MerchantController extends Controller
             return response()->json(['message' => 'Merchant is not found'], 404);
         }
 
-        return response()->json($merchant, 200);
+        $resource = new MerchantResource($merchant);
+
+        return response()->json($resource->resolve());
 
     }
 
@@ -73,7 +82,10 @@ class MerchantController extends Controller
         }
         $merchant->update($request->all());
 
-        return response()->json($merchant, 200);
+
+        $resource = new MerchantResource($merchant);
+
+        return response()->json($resource->resolve());
     }
 
     /**
