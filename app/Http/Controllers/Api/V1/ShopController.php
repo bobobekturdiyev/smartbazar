@@ -126,6 +126,7 @@ class ShopController extends Controller
 
         return response()->json(['message' => 'All shops are deleted'], 200);
     }
+
     /**
      * Get all shops by merchant id
      */
@@ -147,5 +148,53 @@ class ShopController extends Controller
         $shops = Shop::where("merchant_id", $request->merchant_id)->get();
 
         return response()->json( ShopResource::collection($shops)->resolve());
+    }
+
+    /**
+     * Get all shops by merchant id
+     */
+    public function getNearestShop(Request $request){
+
+        $rules = [
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'merchant_id' => [
+                Rule::exists('merchants', 'id')
+            ],
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if($validator->fails()){
+            $response = response()->json(['errors' => $validator->errors()], 422);
+            throw new HttpResponseException($response);
+        }
+
+        $shops = Shop::where("merchant_id", $request->merchant_id)->get();
+
+        $latitude = $request->input('latitude');
+        $longitude = $request->input('longitude');
+
+        $shops->each(function ($shop) use ($latitude, $longitude) {
+            $shop->distance = $this->calculateDistance($latitude, $longitude, $shop->latitude, $shop->longitude);
+        });
+
+
+        return response()->json(ShopResource::collection($shops->sortBy('distance'))->resolve());
+    }
+
+    private function calculateDistance($lat1, $lon1, $lat2, $lon2)
+    {
+        $earthRadius = 6371;
+
+        $latDelta = deg2rad($lat2 - $lat1);
+        $lonDelta = deg2rad($lon2 - $lon1);
+
+        $a = sin($latDelta / 2) * sin($latDelta / 2) +
+            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+            sin($lonDelta / 2) * sin($lonDelta / 2);
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $earthRadius * $c; // Distance in kilometers
     }
 }
