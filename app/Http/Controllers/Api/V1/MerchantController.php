@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Merchant\StoreMerchantRequest;
 use App\Http\Requests\Api\V1\Merchant\UpdateMerchantRequest;
-use App\Http\Resources\MerchantResource;
+use App\Http\Resources\Api\V1\MerchantResource;
 use App\Models\Merchant;
 use Illuminate\Http\Request;
 
@@ -17,7 +17,6 @@ class MerchantController extends Controller
     {
         $query = Merchant::query();
 
-        // Example of applying filters
         if ($request->has('name')) {
             $query->where('name', 'like', '%' . $request->input('name') . '%');
         }

@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Requests\Api\V1\Merchant;
+namespace App\Http\Requests\Api\V1\Shop;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
-class UpdateMerchantRequest extends FormRequest
+class ShopUpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,10 +25,16 @@ class UpdateMerchantRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string|max:255',
-            'status' => 'string|max:15',
+            'address' => "string|max:255",
+            'schedule' => "string",
+            'latitude' => "numeric",
+            'longitude' => "numeric",
+            'merchant_id' => [
+                Rule::exists('merchants', 'id')
+            ],
         ];
     }
+
 
     protected function failedValidation(Validator|\Illuminate\Contracts\Validation\Validator $validator)
     {

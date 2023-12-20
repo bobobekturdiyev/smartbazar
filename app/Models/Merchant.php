@@ -10,4 +10,8 @@ class Merchant extends Model
     use HasFactory;
 
     protected $fillable = ['name', 'status'];
+
+    public function shops(){
+       return Shop::where("merchant_id", $this->id)->get();
+    }
 }

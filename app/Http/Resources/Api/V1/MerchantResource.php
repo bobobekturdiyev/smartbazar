@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Api\V1;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -19,6 +19,7 @@ class MerchantResource extends JsonResource
          'name' =>  $this->name,
          'status' =>  $this->status,
          'registered_at' =>  $this->created_at->format('Y-m-d H:i:s'),
+           'shops' => ShopResource::collection($this->shops()),
        ];
     }
 }
