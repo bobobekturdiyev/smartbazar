@@ -26,13 +26,6 @@ class ShopController extends Controller
         return response()->json($resources->resolve());
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -60,14 +53,6 @@ class ShopController extends Controller
         $resource = new ShopResource($shop);
 
         return response()->json($resource->resolve());
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
     }
 
     /**
@@ -117,10 +102,7 @@ class ShopController extends Controller
 
         $validator = Validator::make($request->all(), $rules);
 
-        if($validator->fails()){
-            $response = response()->json(['errors' => $validator->errors()], 422);
-            throw new HttpResponseException($response);
-        }
+        $this->validatorResponse($validator);
 
         Shop::where("merchant_id", $request->merchant_id)->delete();
 
@@ -140,10 +122,7 @@ class ShopController extends Controller
 
         $validator = Validator::make($request->all(), $rules);
 
-        if($validator->fails()){
-            $response = response()->json(['errors' => $validator->errors()], 422);
-            throw new HttpResponseException($response);
-        }
+        $this->validatorResponse($validator);
 
         $shops = Shop::where("merchant_id", $request->merchant_id)->get();
 
@@ -165,10 +144,7 @@ class ShopController extends Controller
 
         $validator = Validator::make($request->all(), $rules);
 
-        if($validator->fails()){
-            $response = response()->json(['errors' => $validator->errors()], 422);
-            throw new HttpResponseException($response);
-        }
+        $this->validatorResponse($validator);
 
         $shops = Shop::where("merchant_id", $request->merchant_id)->get();
 
@@ -181,6 +157,13 @@ class ShopController extends Controller
 
 
         return response()->json(ShopResource::collection($shops->sortBy('distance'))->resolve());
+    }
+
+    private function validatorResponse(\Illuminate\Validation\Validator $validator){
+        if($validator->fails()){
+            $response = response()->json(['errors' => $validator->errors()], 422);
+            throw new HttpResponseException($response);
+        }
     }
 
     private function calculateDistance($lat1, $lon1, $lat2, $lon2)

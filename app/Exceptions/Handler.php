@@ -2,7 +2,7 @@
 
 namespace App\Exceptions;
 
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 
@@ -29,13 +29,15 @@ class Handler extends ExceptionHandler
         });
     }
 
-    public function render($request, Throwable $exception)
+    protected function unauthenticated($request, AuthenticationException $exception)
     {
-        // Check if the exception is a ModelNotFoundException and the request expects JSON
-        if ($exception instanceof ModelNotFoundException && $request->expectsJson()) {
-            return response()->json(['message' => 'Resource not found'], 404);
+        // Check if the request expects a JSON response
+        if ($request->expectsJson()) {
+            return response()->json(['error' => 'Token is required'], 401);
         }
 
-        return parent::render($request, $exception);
+        // If not, redirect to the login route (default behavior)
+        return redirect()->guest(route('login'));
     }
+
 }
