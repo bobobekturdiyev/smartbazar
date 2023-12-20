@@ -17,6 +17,8 @@ class MerchantController extends Controller
     {
         $query = Merchant::query();
 
+        $query->where('user_id', auth()->id());
+
         if ($request->has('name')) {
             $query->where('name', 'like', '%' . $request->input('name') . '%');
         }
@@ -44,7 +46,15 @@ class MerchantController extends Controller
      */
     public function store(StoreMerchantRequest $request)
     {
-        $model = Merchant::create($request->validated());
+        $data = array_merge($request->validated(), ['user_id' => auth()->id()]);
+
+        $merchant = Merchant::where("user_id", auth()->id())->first();
+
+        if($merchant){
+            return response()->json(['message' => 'You have already merchant associated'], 403);
+        }
+
+        $model = Merchant::create($data);
 
         $resource = new MerchantResource($model);
 
@@ -57,7 +67,7 @@ class MerchantController extends Controller
     public function show($id)
     {
 
-        $merchant = Merchant::find($id);
+        $merchant = Merchant::where('id', $id)->where("user_id", auth()->id())->first();
 
         if(!$merchant){
             return response()->json(['message' => 'Merchant is not found'], 404);
@@ -74,7 +84,7 @@ class MerchantController extends Controller
      */
     public function update(UpdateMerchantRequest $request, $id)
     {
-        $merchant = Merchant::find($id);
+        $merchant = Merchant::where('id', $id)->where("user_id", auth()->id())->first();
 
         if(!$merchant){
             return response()->json(['message' => 'Merchant is not found'], 404);
@@ -92,7 +102,7 @@ class MerchantController extends Controller
      */
     public function destroy($id)
     {
-        $merchant = Merchant::find($id);
+        $merchant = Merchant::where('id', $id)->where("user_id", auth()->id())->first();
 
         if(!$merchant){
             return response()->json(['message' => 'Merchant is not found'], 404);

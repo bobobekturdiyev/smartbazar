@@ -29,9 +29,6 @@ class ShopUpdateRequest extends FormRequest
             'schedule' => "string",
             'latitude' => "numeric",
             'longitude' => "numeric",
-            'merchant_id' => [
-                Rule::exists('merchants', 'id')
-            ],
         ];
     }
 

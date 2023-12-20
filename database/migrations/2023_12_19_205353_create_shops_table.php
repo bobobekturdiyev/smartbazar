@@ -19,7 +19,6 @@ return new class extends Migration
             $table->double('longitude');
             $table->unsignedBigInteger('merchant_id');
             $table->foreign('merchant_id')->references('id')->on('merchants')->onDelete('cascade');
-
             $table->unique(['latitude', 'longitude']);
             $table->timestamps();
         });

@@ -10,4 +10,5 @@ class Shop extends Model
     use HasFactory;
 
     protected $fillable = ['address', 'schedule', 'latitude', 'longitude', 'merchant_id',];
+
 }

@@ -19,7 +19,9 @@ class ShopController extends Controller
      */
     public function index()
     {
-        $shops = Shop::all();
+        $merchantId = $this->getMerchantId();
+
+        $shops = Shop::where('merchant_id', $merchantId)->get();
 
         $resources = ShopResource::collection($shops);
 
@@ -32,7 +34,11 @@ class ShopController extends Controller
      */
     public function store(ShopCreateRequest $request)
     {
-        $model = Shop::create($request->validated());
+        $merchantId = $this->getMerchantId();
+
+        $data = array_merge($request->validated(), ['merchant_id' => $merchantId]);
+
+        $model = Shop::create($data);
 
         $resource = new ShopResource($model);
 
@@ -44,7 +50,9 @@ class ShopController extends Controller
      */
     public function show(string $id)
     {
-        $shop = Shop::find($id);
+        $merchantId = $this->getMerchantId();
+
+        $shop = Shop::where('id', $id)->where('merchant_id', $merchantId)->first();
 
         if(!$shop){
             return response()->json(['message' => 'Shop is not found'], 404);
@@ -60,13 +68,18 @@ class ShopController extends Controller
      */
     public function update(ShopUpdateRequest $request, string $id)
     {
-        $shop = Shop::find($id);
+        $merchantId = $this->getMerchantId();
+
+        $shop = Shop::where('id', $id)->where('merchant_id', $merchantId)->first();
 
         if(!$shop){
             return response()->json(['message' => 'Shop is not found'], 404);
         }
 
-        $shop->update($request->all());
+        $data = $request->all();
+        unset($data['merchant_id']);
+
+        $shop->update($data);
 
         $resource = new ShopResource($shop);
 
@@ -78,7 +91,9 @@ class ShopController extends Controller
      */
     public function destroy(string $id)
     {
-        $shop = Shop::find($id);
+        $merchantId = $this->getMerchantId();
+
+        $shop = Shop::where('id', $id)->where('merchant_id', $merchantId)->first();
 
         if(!$shop){
             return response()->json(['message' => 'Shop is not found'], 404);
@@ -94,17 +109,9 @@ class ShopController extends Controller
      */
     public function deleteAllShops(Request $request){
 
-        $rules = [
-            'merchant_id' => [
-                Rule::exists('merchants', 'id')
-            ],
-        ];
+        $merchantId = $this->getMerchantId();
 
-        $validator = Validator::make($request->all(), $rules);
-
-        $this->validatorResponse($validator);
-
-        Shop::where("merchant_id", $request->merchant_id)->delete();
+        Shop::where('merchant_id', $merchantId)->delete();
 
         return response()->json(['message' => 'All shops are deleted'], 200);
     }
@@ -114,17 +121,9 @@ class ShopController extends Controller
      */
     public function getAllShops(Request $request){
 
-        $rules = [
-            'merchant_id' => [
-                Rule::exists('merchants', 'id')
-            ],
-        ];
+         $merchantId = $this->getMerchantId();
 
-        $validator = Validator::make($request->all(), $rules);
-
-        $this->validatorResponse($validator);
-
-        $shops = Shop::where("merchant_id", $request->merchant_id)->get();
+        $shops = Shop::where("merchant_id", $merchantId)->get();
 
         return response()->json( ShopResource::collection($shops)->resolve());
     }
@@ -134,19 +133,18 @@ class ShopController extends Controller
      */
     public function getNearestShop(Request $request){
 
+        $merchantId = $this->getMerchantId();
+
         $rules = [
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
-            'merchant_id' => [
-                Rule::exists('merchants', 'id')
-            ],
         ];
 
         $validator = Validator::make($request->all(), $rules);
 
         $this->validatorResponse($validator);
 
-        $shops = Shop::where("merchant_id", $request->merchant_id)->get();
+        $shops = Shop::where("merchant_id", $merchantId)->get();
 
         $latitude = $request->input('latitude');
         $longitude = $request->input('longitude');
@@ -179,5 +177,16 @@ class ShopController extends Controller
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
 
         return $earthRadius * $c; // Distance in kilometers
+    }
+
+    private function getMerchantId(){
+        $merchant = auth()->user()->merchant;
+
+        if(!$merchant){
+            $response = response()->json(['message' => 'You have no any merchant associated yet'], 404);
+            throw new HttpResponseException($response);
+        }
+
+        return $merchant->id;
     }
 }

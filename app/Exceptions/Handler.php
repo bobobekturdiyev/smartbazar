@@ -31,13 +31,7 @@ class Handler extends ExceptionHandler
 
     protected function unauthenticated($request, AuthenticationException $exception)
     {
-        // Check if the request expects a JSON response
-        if ($request->expectsJson()) {
-            return response()->json(['error' => 'Token is required'], 401);
-        }
-
-        // If not, redirect to the login route (default behavior)
-        return redirect()->guest(route('login'));
+        return response()->json(['error' => 'Token is required'], 401);
     }
 
 }

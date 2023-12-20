@@ -9,7 +9,7 @@ class Merchant extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'status'];
+    protected $fillable = ['name', 'status', 'user_id'];
 
     public function shops(){
        return Shop::where("merchant_id", $this->id)->get();

@@ -29,10 +29,6 @@ class ShopCreateRequest extends FormRequest
             'schedule' => "string",
             'latitude' => "required|numeric",
             'longitude' => "required|numeric",
-            'merchant_id' => [
-                'required',
-                Rule::exists('merchants', 'id')
-            ],
         ];
     }
 
